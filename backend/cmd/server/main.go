@@ -17,6 +17,6 @@ func main() {
 
 	app := fiber.New()
 	router.SetupRoutes(app)
-	app.Listen(":3000")
+	app.Listen(":" + config.GetEnv("PORT"))
 
 }
