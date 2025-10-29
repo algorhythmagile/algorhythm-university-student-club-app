@@ -28,6 +28,15 @@ Bu döküman; Go tabanlı backend, React (Vite) tabanlı frontend ve PostgreSQL 
 - Temel domain örneği: `SystemMessage`.  
 - Akış: `frontend` istek başlatır → `handler` HTTP isteğini alır → `service` iş kuralını uygular → `repository` veritabanı etkileşimini yönetir → sonuç tekrar yukarı doğru döner ve JSON olarak frontend'e iletilir.
 
+**Örnek JSON yanıtı:**
+
+```json
+{
+  "id": 1,
+  "message_text": "Çok yakında hizmetinizdeyiz!"
+}
+```
+
 ### Konfigürasyon ve Çevresel Değişkenler
 
 - `.env` dosyası backend için kritik ayarları içerir (örn. `DATABASE_URL`, `PORT`).  
