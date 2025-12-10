@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import './Home.css';
 
 const Home = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -12,35 +13,39 @@ const Home = () => {
         }
     }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        setIsLoggedIn(false);
-        navigate('/login');
-    };
-
     return (
         <div className="home-container">
-            <h1>Welcome to Algorhythm University Student Club</h1>
-            {isLoggedIn ? (
-                <div>
-                    <h2>Başarıyla giriş yaptınız!</h2>
-                    <p>Hoşgeldiniz.</p>
-                    <div className="home-buttons">
-                        <Link to="/create-club"><button>Create Club</button></Link>
-                        <Link to="/clubs"><button>View Clubs</button></Link>
-                        <Link to="/my-clubs"><button>My Clubs</button></Link>
-                        <Link to="/profile"><button>Profile</button></Link>
-                        <button onClick={handleLogout}>Logout</button>
+            <div className="hero-section">
+                <h1 className="hero-title">Welcome to Algorhythm University</h1>
+                <p className="hero-subtitle">Discover, Join, and Lead Student Clubs</p>
+
+                {isLoggedIn ? (
+                    <div className="hero-actions">
+                        <p className="welcome-message">Welcome back! Ready to explore?</p>
+                        <Link to="/clubs" className="btn btn-primary">Browse Clubs</Link>
                     </div>
+                ) : (
+                    <div className="hero-actions">
+                        <Link to="/register" className="btn btn-primary">Get Started</Link>
+                        <Link to="/login" className="btn btn-secondary">Login</Link>
+                    </div>
+                )}
+            </div>
+
+            <div className="features-section">
+                <div className="feature-card">
+                    <h3>Join Clubs</h3>
+                    <p>Connect with students who share your interests.</p>
                 </div>
-            ) : (
-                <div>
-                    <p>Please register or login to continue.</p>
-                    <nav>
-                        <Link to="/register">Register</Link> | <Link to="/login">Login</Link>
-                    </nav>
+                <div className="feature-card">
+                    <h3>Create Communities</h3>
+                    <p>Start your own club and lead the way.</p>
                 </div>
-            )}
+                <div className="feature-card">
+                    <h3>Manage Events</h3>
+                    <p>Organize and participate in exciting events.</p>
+                </div>
+            </div>
         </div>
     );
 };

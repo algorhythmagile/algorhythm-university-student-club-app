@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/algorhythmagile/algorhythm-university-student-club-app/internal/config"
 	"github.com/algorhythmagile/algorhythm-university-student-club-app/internal/database"
@@ -11,6 +12,9 @@ import (
 	"github.com/algorhythmagile/algorhythm-university-student-club-app/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 )
 
 func main() {
@@ -22,6 +26,9 @@ func main() {
 	app := fiber.New()
 
 	app.Use(cors.New())
+	app.Use(requestid.New())
+	app.Use(logger.New())
+	app.Use(recover.New())
 
 	userRepo := repository.NewUserRepository(database.DB)
 	authService := service.NewAuthService(userRepo)
@@ -31,7 +38,10 @@ func main() {
 	clubService := service.NewClubService(clubRepo)
 	clubHandler := handler.NewClubHandler(clubService)
 
+	eventRepo := repository.NewEventRepository(database.DB)
+	eventHandler := handler.NewEventHandler(eventRepo)
+
 	fmt.Println("Setting up routes...")
-	router.SetupRoutes(app, authHandler, clubHandler)
-	app.Listen(":" + config.GetEnv("PORT"))
+	router.SetupRoutes(app, authHandler, clubHandler, eventHandler)
+	log.Fatal(app.Listen(":" + config.GetEnv("PORT")))
 }

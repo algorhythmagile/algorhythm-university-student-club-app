@@ -24,24 +24,45 @@ const ClubList = () => {
             await api.post(`/clubs/${clubId}/join`);
             alert('Joined club successfully!');
         } catch (err) {
-            alert('Failed to join club');
+            alert('Failed to join club: ' + (err.response?.data?.error || err.message));
         }
     };
 
     return (
-        <div className="club-list-container">
-            <h2>Student Clubs</h2>
-            {error && <p className="error">{error}</p>}
-            <div className="club-list">
+        <div>
+            <div className="page-header">
+                <h2 className="page-title">Student Clubs</h2>
+                <p className="page-subtitle">Explore and join communities that matter to you.</p>
+            </div>
+
+            {error && <div className="alert alert-error">{error}</div>}
+
+            <div className="grid-container">
                 {clubs.map((club) => (
-                    <div key={club.id} className="club-card">
+                    <div key={club.id} className="card">
                         <h3>{club.name}</h3>
-                        <p>{club.description}</p>
-                        <button onClick={() => handleJoin(club.id)}>Join</button>
+                        <p style={{ color: 'var(--text-secondary)', margin: '1rem 0' }}>
+                            {club.description}
+                        </p>
+                        <button
+                            onClick={() => handleJoin(club.id)}
+                            className="btn btn-primary"
+                            style={{ width: '100%' }}
+                        >
+                            Join Club
+                        </button>
                     </div>
                 ))}
             </div>
-            <Link to="/">Back to Home</Link>
+
+            {clubs.length === 0 && !error && (
+                <div style={{ textAlign: 'center', marginTop: '3rem', color: 'var(--text-secondary)' }}>
+                    <p>No clubs found. Be the first to create one!</p>
+                    <Link to="/create-club" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                        Create Club
+                    </Link>
+                </div>
+            )}
         </div>
     );
 };

@@ -25,27 +25,49 @@ const CreateClub = () => {
     };
 
     return (
-        <div className="create-club-container">
-            <h2>Create a New Club</h2>
-            {error && <p className="error">{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Club Name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                />
-                <textarea
-                    name="description"
-                    placeholder="Description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    required
-                />
-                <button type="submit">Create Club</button>
-            </form>
+        <div className="container">
+            <div className="page-header">
+                <h1 className="page-title">Create Club</h1>
+                <p className="page-subtitle">Start a new community at Algorhythm University.</p>
+            </div>
+
+            <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+                {error && <div className="alert alert-error">{error}</div>}
+
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label className="form-label">Club Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            className="form-input"
+                            placeholder="e.g. Robotics Club"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Description</label>
+                        <textarea
+                            name="description"
+                            className="form-input"
+                            placeholder="What is your club about?"
+                            rows="5"
+                            value={formData.description}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-actions">
+                        <button type="submit" className="btn btn-primary btn-block">
+                            Create Club
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

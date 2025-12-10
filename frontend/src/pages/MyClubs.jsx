@@ -25,54 +25,73 @@ const MyClubs = () => {
     }, []);
 
     return (
-        <div className="my-clubs-container">
-            <h2>My Clubs</h2>
-            {error && <p className="error">{error}</p>}
+        <div>
+            <div className="page-header">
+                <h2 className="page-title">My Clubs</h2>
+                <p className="page-subtitle">Manage clubs you've joined or created.</p>
+            </div>
+
+            {error && <div className="alert alert-error" style={{ marginBottom: '1rem', color: 'red', textAlign: 'center' }}>{error}</div>}
 
             <div className="tabs">
                 <button
-                    className={activeTab === 'memberships' ? 'active' : ''}
+                    className={`tab-btn ${activeTab === 'memberships' ? 'active' : ''}`}
                     onClick={() => setActiveTab('memberships')}
                 >
                     Member Of
                 </button>
                 <button
-                    className={activeTab === 'managed' ? 'active' : ''}
+                    className={`tab-btn ${activeTab === 'managed' ? 'active' : ''}`}
                     onClick={() => setActiveTab('managed')}
                 >
                     Managed By Me
                 </button>
             </div>
 
-            <div className="club-list">
+            <div className="grid-container">
                 {activeTab === 'memberships' && (
-                    <div>
-                        {myMemberships.length === 0 ? <p>You haven't joined any clubs yet.</p> : (
+                    <>
+                        {myMemberships.length === 0 ? (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                                <p>You haven't joined any clubs yet.</p>
+                                <Link to="/clubs" className="btn btn-primary" style={{ marginTop: '1rem' }}>Browse Clubs</Link>
+                            </div>
+                        ) : (
                             myMemberships.map((club) => (
-                                <div key={club.id} className="club-card">
+                                <div key={club.id} className="card">
                                     <h3>{club.name}</h3>
-                                    <p>{club.description}</p>
+                                    <p style={{ color: 'var(--text-secondary)', margin: '1rem 0' }}>{club.description}</p>
                                 </div>
                             ))
                         )}
-                    </div>
+                    </>
                 )}
 
                 {activeTab === 'managed' && (
-                    <div>
-                        {managedClubs.length === 0 ? <p>You haven't created any clubs yet.</p> : (
+                    <>
+                        {managedClubs.length === 0 ? (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                                <p>You haven't created any clubs yet.</p>
+                                <Link to="/create-club" className="btn btn-primary" style={{ marginTop: '1rem' }}>Create Club</Link>
+                            </div>
+                        ) : (
                             managedClubs.map((club) => (
-                                <div key={club.id} className="club-card">
+                                <div key={club.id} className="card">
                                     <h3>{club.name}</h3>
-                                    <p>{club.description}</p>
-                                    <Link to={`/clubs/${club.id}/members`}>View Members</Link>
+                                    <p style={{ color: 'var(--text-secondary)', margin: '1rem 0' }}>{club.description}</p>
+                                    <Link to={`/clubs/${club.id}/members`} className="btn btn-secondary" style={{ width: '100%', marginTop: 'auto' }}>
+                                        View Members
+                                    </Link>
                                 </div>
                             ))
                         )}
-                    </div>
+                    </>
                 )}
             </div>
-            <Link to="/">Back to Home</Link>
+
+            <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+                <Link to="/" style={{ color: 'var(--text-secondary)' }}>&larr; Back to Home</Link>
+            </div>
         </div>
     );
 };
