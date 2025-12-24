@@ -12,4 +12,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const addComment = (eventId, content) => api.post(`/events/${eventId}/comments`, { content });
+export const getComments = (eventId) => api.get(`/events/${eventId}/comments`);
+export const toggleLike = (eventId) => api.post(`/events/${eventId}/like`);
+export const getLikes = (eventId) => api.get(`/events/${eventId}/likes`);
+
 export default api;

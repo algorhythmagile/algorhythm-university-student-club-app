@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../utils/api';
+import EventCard from '../components/EventCard';
 
 const Events = () => {
     const [events, setEvents] = useState([]);
@@ -18,15 +19,6 @@ const Events = () => {
         fetchEvents();
     }, []);
 
-    const handleJoin = async (eventId) => {
-        try {
-            await api.post(`/events/${eventId}/join`);
-            alert('Successfully joined the event!');
-        } catch (err) {
-            alert(err.response?.data?.error || 'Failed to join event');
-        }
-    };
-
     return (
         <div>
             <div className="page-header">
@@ -38,23 +30,7 @@ const Events = () => {
 
             <div className="grid-container">
                 {events.map((event) => (
-                    <div key={event.id} className="card">
-                        <h3>{event.title}</h3>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                            {new Date(event.event_date).toLocaleString()}
-                        </p>
-                        <p style={{ fontWeight: '500', marginBottom: '1rem' }}>📍 {event.location}</p>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-                            {event.description}
-                        </p>
-                        <button
-                            onClick={() => handleJoin(event.id)}
-                            className="btn btn-primary"
-                            style={{ width: '100%' }}
-                        >
-                            Join Event
-                        </button>
-                    </div>
+                    <EventCard key={event.id} event={event} />
                 ))}
             </div>
 

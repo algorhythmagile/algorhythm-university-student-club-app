@@ -125,3 +125,93 @@ func (h *EventHandler) GetMyManagedEvents(c *fiber.Ctx) error {
 	}
 	return c.JSON(events)
 }
+
+// AddComment handles POST /api/events/:id/comments
+func (h *EventHandler) AddComment(c *fiber.Ctx) error {
+	eventID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid event ID"})
+	}
+
+	userID := c.Locals("userID").(int)
+	var req struct {
+		Content string `json:"content"`
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	if req.Content == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Content cannot be empty"})
+	}
+
+	comment := &domain.EventComment{
+		EventID: eventID,
+		UserID:  userID,
+		Content: req.Content,
+	}
+
+	if err := h.repo.CreateComment(c.Context(), comment); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to add comment"})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(comment)
+}
+
+// GetComments handles GET /api/events/:id/comments
+func (h *EventHandler) GetComments(c *fiber.Ctx) error {
+	eventID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid event ID"})
+	}
+
+	comments, err := h.repo.GetCommentsByEventID(c.Context(), eventID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch comments"})
+	}
+
+	return c.JSON(comments)
+}
+
+// ToggleLike handles POST /api/events/:id/like
+func (h *EventHandler) ToggleLike(c *fiber.Ctx) error {
+	eventID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid event ID"})
+	}
+
+	userID := c.Locals("userID").(int)
+	liked, err := h.repo.ToggleLike(c.Context(), eventID, userID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to toggle like"})
+	}
+
+	return c.JSON(fiber.Map{"liked": liked})
+}
+
+// GetLikes handles GET /api/events/:id/likes
+func (h *EventHandler) GetLikes(c *fiber.Ctx) error {
+	eventID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid event ID"})
+	}
+
+	count, err := h.repo.GetLikesCount(c.Context(), eventID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to get likes count"})
+	}
+
+	var liked bool
+	// If user is authenticated, check if they liked it
+	userIDVal := c.Locals("userID")
+	if userIDVal != nil {
+		userID := userIDVal.(int)
+		liked, _ = h.repo.HasUserLikedEvent(c.Context(), eventID, userID)
+	}
+
+	return c.JSON(fiber.Map{
+		"count": count,
+		"liked": liked,
+	})
+}

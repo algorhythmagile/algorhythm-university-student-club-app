@@ -169,3 +169,95 @@ func (r *EventRepository) GetEventsByOwnerID(ctx context.Context, ownerID int) (
 	}
 	return events, nil
 }
+
+func (r *EventRepository) CreateComment(ctx context.Context, comment *domain.EventComment) error {
+	query := `
+		INSERT INTO event_comments (event_id, user_id, content, created_at, updated_at)
+		VALUES ($1, $2, $3, NOW(), NOW())
+		RETURNING id, created_at, updated_at
+	`
+	err := r.db.QueryRow(
+		ctx,
+		query,
+		comment.EventID,
+		comment.UserID,
+		comment.Content,
+	).Scan(&comment.ID, &comment.CreatedAt, &comment.UpdatedAt)
+	if err != nil {
+		return fmt.Errorf("failed to create comment: %w", err)
+	}
+	return nil
+}
+
+func (r *EventRepository) GetCommentsByEventID(ctx context.Context, eventID int) ([]domain.EventComment, error) {
+	query := `
+		SELECT c.id, c.event_id, c.user_id, c.content, c.created_at, c.updated_at, u.username
+		FROM event_comments c
+		JOIN users u ON c.user_id = u.id
+		WHERE c.event_id = $1
+		ORDER BY c.created_at DESC
+	`
+	rows, err := r.db.Query(ctx, query, eventID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query comments: %w", err)
+	}
+	defer rows.Close()
+
+	var comments []domain.EventComment
+	for rows.Next() {
+		var c domain.EventComment
+		if err := rows.Scan(
+			&c.ID, &c.EventID, &c.UserID, &c.Content, &c.CreatedAt, &c.UpdatedAt, &c.UserName,
+		); err != nil {
+			return nil, fmt.Errorf("failed to scan comment: %w", err)
+		}
+		comments = append(comments, c)
+	}
+	return comments, nil
+}
+
+func (r *EventRepository) ToggleLike(ctx context.Context, eventID, userID int) (bool, error) {
+	// Check if like exists
+	var exists bool
+	checkQuery := `SELECT EXISTS(SELECT 1 FROM event_likes WHERE event_id = $1 AND user_id = $2)`
+	err := r.db.QueryRow(ctx, checkQuery, eventID, userID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check like status: %w", err)
+	}
+
+	if exists {
+		// Unlike
+		_, err := r.db.Exec(ctx, `DELETE FROM event_likes WHERE event_id = $1 AND user_id = $2`, eventID, userID)
+		if err != nil {
+			return false, fmt.Errorf("failed to unlike event: %w", err)
+		}
+		return false, nil // Liked = false
+	} else {
+		// Like
+		_, err := r.db.Exec(ctx, `INSERT INTO event_likes (event_id, user_id) VALUES ($1, $2)`, eventID, userID)
+		if err != nil {
+			return false, fmt.Errorf("failed to like event: %w", err)
+		}
+		return true, nil // Liked = true
+	}
+}
+
+func (r *EventRepository) GetLikesCount(ctx context.Context, eventID int) (int, error) {
+	var count int
+	query := `SELECT COUNT(*) FROM event_likes WHERE event_id = $1`
+	err := r.db.QueryRow(ctx, query, eventID).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get likes count: %w", err)
+	}
+	return count, nil
+}
+
+func (r *EventRepository) HasUserLikedEvent(ctx context.Context, eventID, userID int) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM event_likes WHERE event_id = $1 AND user_id = $2)`
+	err := r.db.QueryRow(ctx, query, eventID, userID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check like status: %w", err)
+	}
+	return exists, nil
+}
